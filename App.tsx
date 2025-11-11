@@ -58,7 +58,11 @@ const App: React.FC = () => {
   
   const addNotification = useCallback((message: string, type: 'info' | 'success' | 'error' = 'info') => {
     const id = Date.now();
-    setNotifications(prev => [...prev, { id, message, type }]);
+    setNotifications([{ id, message, type }]); // Only keep 1 notification at a time
+    // Auto-hide after 5 seconds
+    setTimeout(() => {
+      setNotifications(prev => prev.filter(n => n.id !== id));
+    }, 5000);
   }, []);
 
   const removeNotification = useCallback((id: number) => {
@@ -101,7 +105,7 @@ const App: React.FC = () => {
   const NavItem: React.FC<{ page: Page; icon: React.ReactNode; label: string, isMobile?: boolean }> = ({ page, icon, label, isMobile }) => (
     <button
       onClick={() => setCurrentPage(page)}
-      className={`flex ${isMobile ? 'flex-col items-center space-y-1' : 'items-center space-x-3 p-3'} rounded-lg w-full text-left transition-colors ${
+      className={`flex ${isMobile ? 'flex-col items-center justify-center' : 'items-center space-x-3 p-3'} rounded-lg w-full text-left transition-all duration-300 ${
         currentPage === page
           ? 'bg-primary-500 text-white'
           : 'text-gray-600 dark:text-gray-300 hover:bg-primary-100 dark:hover:bg-gray-700'
@@ -113,12 +117,62 @@ const App: React.FC = () => {
   );
 
   const BottomNav: React.FC = () => (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 shadow-[0_-2px_10px_rgba(0,0,0,0.1)] flex justify-around p-2 z-40">
-        <NavItem page="dashboard" icon={<LayoutDashboard size={24} />} label="Dashboard" isMobile />
-        <NavItem page="chat" icon={<MessageSquare size={24} />} label="AI Assistant" isMobile/>
-        <NavItem page="history" icon={<History size={24} />} label="History" isMobile/>
-        <NavItem page="notifications" icon={<Bell size={24} />} label="Notifications" isMobile/>
-        <NavItem page="profile" icon={<UserIcon size={24} />} label="Profile" isMobile/>
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 shadow-[0_-2px_10px_rgba(0,0,0,0.1)] flex justify-around items-center p-2 z-40">
+        <button
+          onClick={() => setCurrentPage('dashboard')}
+          className={`p-3 rounded-full transition-all duration-300 ${
+            currentPage === 'dashboard'
+              ? 'bg-primary-500 text-white'
+              : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+          }`}
+          title="Dashboard"
+        >
+          <LayoutDashboard size={24} />
+        </button>
+        <button
+          onClick={() => setCurrentPage('chat')}
+          className={`p-3 rounded-full transition-all duration-300 ${
+            currentPage === 'chat'
+              ? 'bg-primary-500 text-white'
+              : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+          }`}
+          title="AI Assistant"
+        >
+          <MessageSquare size={24} />
+        </button>
+        <button
+          onClick={() => setCurrentPage('history')}
+          className={`p-3 rounded-full transition-all duration-300 ${
+            currentPage === 'history'
+              ? 'bg-primary-500 text-white'
+              : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+          }`}
+          title="History"
+        >
+          <History size={24} />
+        </button>
+        <button
+          onClick={() => setCurrentPage('notifications')}
+          className={`p-3 rounded-full transition-all duration-300 ${
+            currentPage === 'notifications'
+              ? 'bg-primary-500 text-white'
+              : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+          }`}
+          title="Notifications"
+        >
+          <Bell size={24} />
+        </button>
+        <button
+          onClick={() => setCurrentPage('profile')}
+          className={`p-3 rounded-full transition-all duration-300 ${
+            currentPage === 'profile'
+              ? 'bg-primary-500 text-white'
+              : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+          }`}
+          title="Profile"
+        >
+          <UserIcon size={24} />
+        </button>
     </nav>
   );
 

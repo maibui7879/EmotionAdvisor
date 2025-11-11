@@ -28,3 +28,15 @@
 .animate-fade-out {
   animation: fadeOut 0.3s ease-out;
 }
+
+/* Bottom nav outline animation */
+.nav-outline {
+  position: absolute;
+  bottom: 0;
+  width: 52px;
+  height: 52px;
+  border: 2px solid;
+  border-radius: 9999px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+}
