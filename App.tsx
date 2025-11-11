@@ -1,0 +1,207 @@
+
+import React, { useState, useEffect, useCallback } from 'react';
+import Dashboard from './components/Dashboard';
+import Chat from './components/Chat';
+import EmotionHistory from './components/EmotionHistory';
+import ScheduleTimetable from './components/ScheduleTimetable';
+import Profile from './components/Profile';
+import Notifications from './components/Notifications';
+import { Theme, User, Page, Notification as NotificationType, ColorTheme } from './types';
+import { Moon, Sun, LayoutDashboard, MessageSquare, History, Calendar, User as UserIcon, Bell } from 'lucide-react';
+import NotificationContainer from './components/common/NotificationContainer';
+
+const colorThemes: Record<ColorTheme, Record<string, string>> = {
+  green: { '--color-primary-500': '16 185 129', '--color-primary-600': '5 150 105' /* ... add all shades */ },
+  blue: { '--color-primary-500': '59 130 246', '--color-primary-600': '37 99 235' /* ... */ },
+  purple: { '--color-primary-500': '139 92 246', '--color-primary-600': '124 58 237' /* ... */ },
+  orange: { '--color-primary-500': '249 115 22', '--color-primary-600': '234 88 12' /* ... */ },
+};
+
+const fullColorPalettes: Record<ColorTheme, Record<string, string>> = {
+    green: { '50': '236 253 245', '100': '209 250 229', '200': '167 243 208', '300': '110 231 183', '400': '52 211 153', '500': '16 185 129', '600': '5 150 105', '700': '4 120 87', '800': '6 95 70', '900': '6 78 59', '950': '2 44 34' },
+    blue: { '50': '239 246 255', '100': '219 234 254', '200': '191 219 254', '300': '147 197 253', '400': '96 165 250', '500': '59 130 246', '600': '37 99 235', '700': '29 78 216', '800': '30 64 175', '900': '30 58 138', '950': '23 37 84' },
+    purple: { '50': '245 243 255', '100': '237 233 254', '200': '221 214 254', '300': '196 181 253', '400': '167 139 250', '500': '139 92 246', '600': '124 58 237', '700': '109 40 217', '800': '91 33 182', '900': '76 29 149', '950': '46 16 101' },
+    orange: { '50': '255 247 237', '100': '255 237 213', '200': '254 215 170', '300': '253 186 116', '400': '251 146 60', '500': '249 115 22', '600': '234 88 12', '700': '194 65 12', '800': '154 52 18', '900': '124 45 18', '950': '69 25 8' },
+};
+
+
+const App: React.FC = () => {
+  const [theme, setTheme] = useState<Theme>(() => (localStorage.getItem('theme') as Theme) || 'dark');
+  const [colorTheme, setColorTheme] = useState<ColorTheme>(() => (localStorage.getItem('colorTheme') as ColorTheme) || 'green');
+  const [user, setUser] = useState<User | null>(() => {
+    const savedUser = localStorage.getItem('SybauSuzuka-user');
+    return savedUser ? JSON.parse(savedUser) : null;
+  });
+  const [currentPage, setCurrentPage] = useState<Page>('chat');
+  const [notifications, setNotifications] = useState<NotificationType[]>([]);
+
+  useEffect(() => {
+    const root = document.documentElement;
+    if (theme === 'dark') {
+      root.classList.add('dark');
+    } else {
+      root.classList.remove('dark');
+    }
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+
+  useEffect(() => {
+    const root = document.documentElement;
+    const palette = fullColorPalettes[colorTheme];
+    for (const [shade, value] of Object.entries(palette)) {
+        // Fix for: Argument of type 'unknown' is not assignable to parameter of type 'string'.
+        // The value from Object.entries might be inferred as 'unknown' in some TS configurations.
+        root.style.setProperty(`--color-primary-${shade}`, value as string);
+    }
+    localStorage.setItem('colorTheme', colorTheme);
+  }, [colorTheme]);
+  
+  const addNotification = useCallback((message: string, type: 'info' | 'success' | 'error' = 'info') => {
+    const id = Date.now();
+    setNotifications(prev => [...prev, { id, message, type }]);
+  }, []);
+
+  const removeNotification = useCallback((id: number) => {
+    setNotifications(prev => prev.filter(n => n.id !== id));
+  }, []);
+
+  const clearAllNotifications = useCallback(() => {
+    setNotifications([]);
+  }, []);
+
+  useEffect(() => {
+    if(user){
+      addNotification(`Welcome back, ${user.name}! How are you feeling today?`, 'info');
+    }
+  }, [user, addNotification]);
+
+  const handleLogin = (name: string) => {
+    const newUser: User = {
+      id: '1',
+      name,
+      email: `${name.toLowerCase()}@example.com`,
+      avatar: `https://i.pravatar.cc/150?u=${name}`,
+      createdAt: new Date().toISOString(),
+    };
+    localStorage.setItem('SybauSuzuka-user', JSON.stringify(newUser));
+    setUser(newUser);
+    setCurrentPage('chat'); // Go directly to chat after login
+  };
+  
+  const handleLogout = () => {
+    localStorage.removeItem('SybauSuzuka-user');
+    setUser(null);
+    setCurrentPage('dashboard');
+  }
+
+  const toggleTheme = () => {
+    setTheme(prevTheme => (prevTheme === 'light' ? 'dark' : 'light'));
+  };
+  
+  const NavItem: React.FC<{ page: Page; icon: React.ReactNode; label: string, isMobile?: boolean }> = ({ page, icon, label, isMobile }) => (
+    <button
+      onClick={() => setCurrentPage(page)}
+      className={`flex ${isMobile ? 'flex-col items-center space-y-1' : 'items-center space-x-3 p-3'} rounded-lg w-full text-left transition-colors ${
+        currentPage === page
+          ? 'bg-primary-500 text-white'
+          : 'text-gray-600 dark:text-gray-300 hover:bg-primary-100 dark:hover:bg-gray-700'
+      }`}
+    >
+      {icon}
+      <span className={`font-medium ${isMobile ? 'text-xs' : ''}`}>{label}</span>
+    </button>
+  );
+
+  const BottomNav: React.FC = () => (
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 shadow-[0_-2px_10px_rgba(0,0,0,0.1)] flex justify-around p-2 z-40">
+        <NavItem page="dashboard" icon={<LayoutDashboard size={24} />} label="Dashboard" isMobile />
+        <NavItem page="chat" icon={<MessageSquare size={24} />} label="AI Assistant" isMobile/>
+        <NavItem page="history" icon={<History size={24} />} label="History" isMobile/>
+        <NavItem page="notifications" icon={<Bell size={24} />} label="Notifications" isMobile/>
+        <NavItem page="profile" icon={<UserIcon size={24} />} label="Profile" isMobile/>
+    </nav>
+  );
+
+
+  if (!user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+        <div className="w-full max-w-md p-8 space-y-8 bg-white dark:bg-gray-800 rounded-2xl shadow-lg">
+          <div className="text-center">
+            <h1 className="text-4xl font-bold text-primary-600 dark:text-primary-400">SybauSuzuka</h1>
+            <p className="mt-2 text-gray-600 dark:text-gray-300">Your Mental Wellness Companion</p>
+          </div>
+          <form className="space-y-6" onSubmit={(e) => { e.preventDefault(); handleLogin(e.currentTarget.username.value); }}>
+            <div className="relative">
+              <input
+                id="username"
+                name="username"
+                type="text"
+                required
+                className="w-full px-4 py-3 text-gray-900 bg-gray-100 border-2 border-transparent rounded-lg dark:text-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                placeholder="Enter your name"
+              />
+            </div>
+            <button type="submit" className="w-full px-4 py-3 font-semibold text-white bg-primary-600 rounded-lg hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-transform transform hover:scale-105">
+              Start Journey
+            </button>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
+  const renderPage = () => {
+    switch (currentPage) {
+      case 'dashboard':
+        return <Dashboard user={user} />;
+      case 'chat':
+        return <Chat addNotification={addNotification} />;
+      case 'history':
+        return <EmotionHistory />;
+      case 'schedule':
+        return <ScheduleTimetable addNotification={addNotification} />;
+      case 'notifications':
+        return <Notifications notifications={notifications} onClear={clearAllNotifications} />;
+      case 'profile':
+        return <Profile user={user} onLogout={handleLogout} colorTheme={colorTheme} setColorTheme={setColorTheme} />;
+      default:
+        return <Chat addNotification={addNotification} />;
+    }
+  };
+
+  return (
+    <div className="flex h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+      <NotificationContainer notifications={notifications} onRemove={removeNotification} />
+      <aside className="hidden md:flex w-64 p-6 bg-white dark:bg-gray-800 shadow-lg flex-col justify-between">
+        <div>
+          <div className="flex items-center space-x-3 mb-10">
+            <div className="w-12 h-12 bg-primary-500 rounded-full flex items-center justify-center text-white text-2xl font-bold">
+              A
+            </div>
+            <h1 className="text-2xl font-bold text-primary-600 dark:text-primary-400">SybauSuzuka</h1>
+          </div>
+          <nav className="space-y-2">
+            <NavItem page="dashboard" icon={<LayoutDashboard size={20} />} label="Dashboard" />
+            <NavItem page="chat" icon={<MessageSquare size={20} />} label="AI Assistant" />
+            <NavItem page="history" icon={<History size={20} />} label="History" />
+            <NavItem page="notifications" icon={<Bell size={20} />} label="Notifications" />
+            <NavItem page="schedule" icon={<Calendar size={20} />} label="Schedule" />
+            <NavItem page="profile" icon={<UserIcon size={20} />} label="Profile" />
+          </nav>
+        </div>
+        <div className="flex items-center justify-between">
+          <button onClick={toggleTheme} className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+            {theme === 'light' ? <Moon /> : <Sun />}
+          </button>
+        </div>
+      </aside>
+      <main className="flex-1 p-2 md:p-6 lg:p-10 overflow-y-auto pb-20 md:pb-6 lg:pb-10">
+        {renderPage()}
+      </main>
+      <BottomNav />
+    </div>
+  );
+};
+
+export default App;

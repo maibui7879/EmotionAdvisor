@@ -1,0 +1,8 @@
+
+{
+  "name": "Aura - Your Mental Wellness Companion",
+  "description": "An application that allows users to share their emotions and mental state, receiving positive feedback and suggestions to help balance emotions and improve mental health. The system records an emotion journal and analyzes emotional trends over time, helping users relieve stress and enhance awareness of their psychological well-being. It features an AI assistant for conversations, mood analysis via live camera, and personalized scheduling to improve mood.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
