@@ -3,6 +3,7 @@
 import React from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { EmotionEntry, Mood } from '../types';
+import { Language, t } from '../i18n';
 
 interface AnalyticsChartProps {
   data: EmotionEntry[];
@@ -25,6 +26,7 @@ const moodToScore: Record<Mood, number> = {
 };
 
 const AnalyticsChart: React.FC<AnalyticsChartProps> = ({ data }) => {
+  const language: Language = (localStorage.getItem('language') as Language) || 'en';
   // Transform data: group by 3-minute intervals and compute average mood score per interval
   const chartDataMap = new Map<string, { name: string; sum: number; count: number }>();
 
@@ -55,7 +57,7 @@ const AnalyticsChart: React.FC<AnalyticsChartProps> = ({ data }) => {
   if (data.length === 0) {
     return (
       <div className="flex items-center justify-center h-full text-gray-500">
-        Log your first mood to see your chart.
+        {language === 'vi' ? 'Ghi cảm xúc đầu tiên để xem biểu đồ.' : 'Log your first mood to see your chart.'}
       </div>
     );
   }

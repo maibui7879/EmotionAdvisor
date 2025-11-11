@@ -1,12 +1,15 @@
 import React from 'react';
 import { User, ColorTheme } from '../types';
-import { Mail, Calendar, LogOut, Palette } from 'lucide-react';
+import { Mail, Calendar, LogOut, Palette, Globe } from 'lucide-react';
+import { Language, t } from '../i18n';
 
 interface ProfileProps {
   user: User;
   onLogout: () => void;
   colorTheme: ColorTheme;
   setColorTheme: (theme: ColorTheme) => void;
+  language: Language;
+  setLanguage: (lang: Language) => void;
 }
 
 const colorOptions: { name: ColorTheme; bg: string }[] = [
@@ -16,10 +19,15 @@ const colorOptions: { name: ColorTheme; bg: string }[] = [
     { name: 'orange', bg: 'bg-orange-500' },
 ]
 
-const Profile: React.FC<ProfileProps> = ({ user, onLogout, colorTheme, setColorTheme }) => {
+const languageOptions: { code: Language; label: string }[] = [
+    { code: 'en', label: 'English' },
+    { code: 'vi', label: 'Tiếng Việt' },
+]
+
+const Profile: React.FC<ProfileProps> = ({ user, onLogout, colorTheme, setColorTheme, language, setLanguage }) => {
   return (
     <div className="max-w-2xl mx-auto">
-      <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-8">Profile & Settings</h1>
+      <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-8">{t('profile.title', language)}</h1>
       <div className="p-8 bg-white dark:bg-gray-800 rounded-2xl shadow-md space-y-8">
         <div className="text-center">
             <img
@@ -36,7 +44,7 @@ const Profile: React.FC<ProfileProps> = ({ user, onLogout, colorTheme, setColorT
                 </div>
                 <div className="flex items-center text-gray-600 dark:text-gray-300">
                     <Calendar size={20} className="mr-3 text-primary-500"/>
-                    <span>Joined on {new Date(user.createdAt).toLocaleDateString()}</span>
+                    <span>{t('profile.createdAt', language)}: {new Date(user.createdAt).toLocaleDateString(language === 'vi' ? 'vi-VN' : 'en-US')}</span>
                 </div>
             </div>
         </div>
@@ -44,7 +52,7 @@ const Profile: React.FC<ProfileProps> = ({ user, onLogout, colorTheme, setColorT
         <div>
             <div className="flex items-center mb-4">
                 <Palette size={20} className="mr-3 text-primary-500"/>
-                <h3 className="text-xl font-semibold">Theme Color</h3>
+                <h3 className="text-xl font-semibold">{t('profile.color', language)}</h3>
             </div>
             <div className="flex space-x-4">
                 {colorOptions.map(color => (
@@ -57,13 +65,35 @@ const Profile: React.FC<ProfileProps> = ({ user, onLogout, colorTheme, setColorT
                 ))}
             </div>
         </div>
+
+        <div>
+            <div className="flex items-center mb-4">
+                <Globe size={20} className="mr-3 text-primary-500"/>
+                <h3 className="text-xl font-semibold">{t('profile.language', language)}</h3>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+                {languageOptions.map(lang => (
+                    <button
+                        key={lang.code}
+                        onClick={() => setLanguage(lang.code)}
+                        className={`px-4 py-3 rounded-lg font-medium transition-all ${
+                            language === lang.code
+                                ? 'bg-primary-500 text-white'
+                                : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600'
+                        }`}
+                    >
+                        {lang.label}
+                    </button>
+                ))}
+            </div>
+        </div>
         
         <button 
             onClick={onLogout}
             className="w-full flex items-center justify-center px-4 py-3 font-semibold text-white bg-red-500 rounded-lg hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"
         >
             <LogOut size={20} className="mr-2"/>
-            Logout
+            {t('profile.logout', language)}
         </button>
       </div>
     </div>

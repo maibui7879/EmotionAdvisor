@@ -3,11 +3,13 @@ import { ScheduleItem } from '../types';
 import { getScheduleItems, updateScheduleItem, saveScheduleItem } from '../services/storageService';
 import { groupSchedulesByDate, sortSchedulesByTime, timeToMinutes } from '../services/scheduleService';
 import { CheckCircle, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Language, t } from '../i18n';
 
 const ScheduleTimetable: React.FC<{ addNotification: (message: string, type?: 'info' | 'success' | 'error') => void; }> = ({ addNotification }) => {
   const [allSchedules, setAllSchedules] = useState<ScheduleItem[]>([]);
   const [currentDate, setCurrentDate] = useState(new Date().toISOString().split('T')[0]);
   const [daySchedules, setDaySchedules] = useState<ScheduleItem[]>([]);
+  const language: Language = (localStorage.getItem('language') as Language) || 'en';
 
   const fetchSchedules = useCallback(() => {
     const items = getScheduleItems();
@@ -28,7 +30,7 @@ const ScheduleTimetable: React.FC<{ addNotification: (message: string, type?: 'i
     updateScheduleItem(updated);
     fetchSchedules();
     addNotification(
-      item.completed ? `Unmarked "${item.title}"` : `Completed "${item.title}"!`,
+      item.completed ? (language === 'vi' ? `Bỏ đánh dấu "${item.title}"` : `Unmarked "${item.title}"`) : (language === 'vi' ? `Đã hoàn thành "${item.title}"!` : `Completed "${item.title}"!`),
       item.completed ? 'info' : 'success'
     );
   };
@@ -40,7 +42,7 @@ const ScheduleTimetable: React.FC<{ addNotification: (message: string, type?: 'i
     allItems.forEach(item => item.id !== id ? null : null);
     // Simple delete by re-filtering
     setAllSchedules(allItems.filter(item => item.id !== id));
-    addNotification('Schedule item deleted', 'info');
+  addNotification(language === 'vi' ? 'Đã xóa lịch' : 'Schedule item deleted', 'info');
   };
 
   const previousDay = () => {
@@ -81,8 +83,8 @@ const ScheduleTimetable: React.FC<{ addNotification: (message: string, type?: 'i
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-gray-800 dark:text-white">Schedule Timetable</h1>
-        <p className="text-gray-500 dark:text-gray-400 mt-1">View and manage your daily wellness schedule</p>
+        <h1 className="text-3xl font-bold text-gray-800 dark:text-white">{t('schedule.title', language)}</h1>
+          <p className="text-gray-500 dark:text-gray-400 mt-1">{t('schedule.subtitle', language)}</p>
       </div>
 
       {/* Date Navigation */}
@@ -96,9 +98,9 @@ const ScheduleTimetable: React.FC<{ addNotification: (message: string, type?: 'i
 
         <div className="text-center">
           <h2 className="text-2xl font-bold text-gray-800 dark:text-white">
-            {displayDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+            {displayDate.toLocaleDateString((language === 'vi' ? 'vi-VN' : 'en-US'), { weekday: 'long', month: 'long', day: 'numeric' })}
           </h2>
-          {isToday && <span className="text-sm text-primary-500 font-semibold">Today</span>}
+          {isToday && <span className="text-sm text-primary-500 font-semibold">{language === 'vi' ? 'Hôm nay' : 'Today'}</span>}
         </div>
 
         <div className="flex gap-2">
@@ -107,7 +109,7 @@ const ScheduleTimetable: React.FC<{ addNotification: (message: string, type?: 'i
               onClick={today}
               className="px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors font-medium"
             >
-              Today
+              {language === 'vi' ? 'Hôm nay' : 'Today'}
             </button>
           )}
           <button

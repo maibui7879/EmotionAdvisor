@@ -3,9 +3,11 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { ScheduleItem } from '../types';
 import { getScheduleItems, updateScheduleItem } from '../services/storageService';
 import { CheckCircle, Clock, Trash2 } from 'lucide-react';
+import { Language, t } from '../i18n';
 
 const Schedule: React.FC<{ addNotification: (message: string, type?: 'info' | 'success' | 'error') => void; }> = ({ addNotification }) => {
   const [schedule, setSchedule] = useState<ScheduleItem[]>([]);
+  const language: Language = (localStorage.getItem('language') as Language) || 'en';
   
   const fetchSchedule = useCallback(() => {
     const items = getScheduleItems().filter(item => {
@@ -33,9 +35,9 @@ const Schedule: React.FC<{ addNotification: (message: string, type?: 'info' | 's
           const timeToNotification = itemTime.getTime() - now.getTime() - 15 * 60 * 1000;
           
           if (timeToNotification > 0) {
-              const timerId = setTimeout(() => {
-                  addNotification(`Reminder: "${item.title}" is in 15 minutes!`, 'info');
-              }, timeToNotification);
+        const timerId = setTimeout(() => {
+          addNotification(language === 'vi' ? `Nhắc: "${item.title}" còn 15 phút!` : `Reminder: "${item.title}" is in 15 minutes!`, 'info');
+        }, timeToNotification);
 
               return () => clearTimeout(timerId);
           }
@@ -50,7 +52,7 @@ const Schedule: React.FC<{ addNotification: (message: string, type?: 'info' | 's
   
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold text-gray-800 dark:text-white">Today's Wellness Schedule</h1>
+  <h1 className="text-3xl font-bold text-gray-800 dark:text-white">{language === 'vi' ? 'Lịch trình wellness hôm nay' : "Today's Wellness Schedule"}</h1>
       <div className="p-6 bg-white dark:bg-gray-800 rounded-2xl shadow-md">
         {schedule.length > 0 ? (
           <ul className="space-y-4">
@@ -80,8 +82,8 @@ const Schedule: React.FC<{ addNotification: (message: string, type?: 'info' | 's
           </ul>
         ) : (
           <div className="text-center py-10">
-            <p className="text-gray-500 dark:text-gray-400">Your schedule for today is clear.</p>
-            <p className="text-sm mt-2 text-gray-400">AI might suggest activities based on your mood logs.</p>
+            <p className="text-gray-500 dark:text-gray-400">{language === 'vi' ? 'Lịch của bạn hôm nay trống.' : 'Your schedule for today is clear.'}</p>
+            <p className="text-sm mt-2 text-gray-400">{language === 'vi' ? 'AI có thể đề xuất hoạt động dựa trên ghi chú cảm xúc của bạn.' : 'AI might suggest activities based on your mood logs.'}</p>
           </div>
         )}
       </div>

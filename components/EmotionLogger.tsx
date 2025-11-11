@@ -5,6 +5,7 @@ import { MOOD_DETAILS } from '../constants';
 import { saveEmotionEntry, updateEmotionEntry } from '../services/storageService';
 import { getPositiveSuggestion, getScheduleSuggestion } from '../services/geminiService';
 import Spinner from './common/Spinner';
+import { Language, t } from '../i18n';
 
 interface EmotionLoggerProps {
   onEmotionLogged: () => void;
@@ -19,8 +20,9 @@ const EmotionLogger: React.FC<EmotionLoggerProps> = ({ onEmotionLogged, addNotif
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const language: Language = (localStorage.getItem('language') as Language) || 'en';
     if (!selectedMood) {
-      addNotification("Please select a mood.", "error");
+      addNotification(language === 'vi' ? 'Vui lòng chọn cảm xúc.' : 'Please select a mood.', 'error');
       return;
     }
     setIsLoading(true);
@@ -33,8 +35,8 @@ const EmotionLogger: React.FC<EmotionLoggerProps> = ({ onEmotionLogged, addNotif
     
     // Save entry without AI suggestion first for responsiveness
     const savedEntry = saveEmotionEntry(newEntryData);
-    onEmotionLogged(); // Update UI immediately
-    addNotification("Emotion logged successfully!", "success");
+  onEmotionLogged(); // Update UI immediately
+  addNotification(t('emotion.success', (localStorage.getItem('language') as Language) || 'en'), 'success');
 
     // Then, get AI suggestion and update the entry
     const suggestion = await getPositiveSuggestion(newEntryData);
@@ -45,7 +47,7 @@ const EmotionLogger: React.FC<EmotionLoggerProps> = ({ onEmotionLogged, addNotif
     if (note.trim().length > 0) {
         const scheduleSuggestions = await getScheduleSuggestion(note);
         if(scheduleSuggestions.length > 0) {
-            addNotification(`AI has suggested some activities for you. Check your schedule!`, "info");
+            addNotification(language === 'vi' ? 'AI đã đề xuất một vài hoạt động cho bạn. Kiểm tra lịch trình!' : 'AI has suggested some activities for you. Check your schedule!', 'info');
             // The schedule component will read from storage, so we just need to save them.
             // This is a simplified approach. In a real app, you'd probably use a global state.
             const { saveScheduleItem } = await import('../services/storageService');
@@ -63,10 +65,10 @@ const EmotionLogger: React.FC<EmotionLoggerProps> = ({ onEmotionLogged, addNotif
 
   return (
     <div className="p-6 bg-white dark:bg-gray-800 rounded-2xl shadow-md">
-      <h2 className="text-xl font-semibold mb-4">Log Your Mood</h2>
+  <h2 className="text-xl font-semibold mb-4">{t('emotion.title', (localStorage.getItem('language') as Language) || 'en')}</h2>
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">How are you feeling?</label>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('emotion.mood', (localStorage.getItem('language') as Language) || 'en')}</label>
           <div className="grid grid-cols-4 gap-2">
             {Object.values(Mood).map(mood => (
               <button
@@ -83,7 +85,7 @@ const EmotionLogger: React.FC<EmotionLoggerProps> = ({ onEmotionLogged, addNotif
         </div>
         
         <div>
-          <label htmlFor="intensity" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Intensity: {intensity}</label>
+          <label htmlFor="intensity" className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('emotion.intensity', (localStorage.getItem('language') as Language) || 'en')}: {intensity}</label>
           <input
             id="intensity"
             type="range"
@@ -96,14 +98,14 @@ const EmotionLogger: React.FC<EmotionLoggerProps> = ({ onEmotionLogged, addNotif
         </div>
 
         <div>
-          <label htmlFor="note" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Add a note (optional)</label>
+          <label htmlFor="note" className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('emotion.note', (localStorage.getItem('language') as Language) || 'en')}</label>
           <textarea
             id="note"
             rows={3}
             value={note}
             onChange={(e) => setNote(e.target.value)}
             className="mt-1 block w-full rounded-md bg-gray-100 dark:bg-gray-700 border-transparent focus:border-primary-500 focus:bg-white dark:focus:bg-gray-600 focus:ring-0"
-            placeholder="What's on your mind?"
+            placeholder={ (localStorage.getItem('language') as Language) === 'vi' ? 'Bạn đang nghĩ gì?' : "What's on your mind?" }
           />
         </div>
 
@@ -112,7 +114,7 @@ const EmotionLogger: React.FC<EmotionLoggerProps> = ({ onEmotionLogged, addNotif
           disabled={isLoading || !selectedMood}
           className="w-full flex justify-center items-center px-4 py-3 font-semibold text-white bg-primary-600 rounded-lg hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:bg-primary-300 disabled:cursor-not-allowed transition-colors"
         >
-          {isLoading ? <Spinner /> : 'Save Mood'}
+          {isLoading ? <Spinner /> : ( (localStorage.getItem('language') as Language) === 'vi' ? 'Lưu cảm xúc' : 'Save Mood') }
         </button>
       </form>
     </div>

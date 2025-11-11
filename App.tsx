@@ -9,6 +9,7 @@ import Notifications from './components/Notifications';
 import { Theme, User, Page, Notification as NotificationType, ColorTheme } from './types';
 import { Moon, Sun, LayoutDashboard, MessageSquare, History, Calendar, User as UserIcon, Bell } from 'lucide-react';
 import NotificationContainer from './components/common/NotificationContainer';
+import { Language, t } from './i18n';
 
 const colorThemes: Record<ColorTheme, Record<string, string>> = {
   green: { '--color-primary-500': '16 185 129', '--color-primary-600': '5 150 105' /* ... add all shades */ },
@@ -28,6 +29,7 @@ const fullColorPalettes: Record<ColorTheme, Record<string, string>> = {
 const App: React.FC = () => {
   const [theme, setTheme] = useState<Theme>(() => (localStorage.getItem('theme') as Theme) || 'dark');
   const [colorTheme, setColorTheme] = useState<ColorTheme>(() => (localStorage.getItem('colorTheme') as ColorTheme) || 'green');
+  const [language, setLanguage] = useState<Language>(() => (localStorage.getItem('language') as Language) || 'en');
   const [user, setUser] = useState<User | null>(() => {
     const savedUser = localStorage.getItem('SybauSuzuka-user');
     return savedUser ? JSON.parse(savedUser) : null;
@@ -49,12 +51,15 @@ const App: React.FC = () => {
     const root = document.documentElement;
     const palette = fullColorPalettes[colorTheme];
     for (const [shade, value] of Object.entries(palette)) {
-        // Fix for: Argument of type 'unknown' is not assignable to parameter of type 'string'.
-        // The value from Object.entries might be inferred as 'unknown' in some TS configurations.
         root.style.setProperty(`--color-primary-${shade}`, value as string);
     }
     localStorage.setItem('colorTheme', colorTheme);
   }, [colorTheme]);
+
+  useEffect(() => {
+    localStorage.setItem('language', language);
+    document.documentElement.lang = language;
+  }, [language]);
   
   const addNotification = useCallback((message: string, type: 'info' | 'success' | 'error' = 'info') => {
     const id = Date.now();
@@ -75,9 +80,9 @@ const App: React.FC = () => {
 
   useEffect(() => {
     if(user){
-      addNotification(`Welcome back, ${user.name}! How are you feeling today?`, 'info');
+      addNotification(t('login.welcome', language, { name: user.name }), 'info');
     }
-  }, [user, addNotification]);
+  }, [user, addNotification, language]);
 
   const handleLogin = (name: string) => {
     const newUser: User = {
@@ -117,10 +122,10 @@ const App: React.FC = () => {
   );
 
   const BottomNav: React.FC = () => (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 shadow-[0_-2px_10px_rgba(0,0,0,0.1)] flex justify-around items-center p-2 z-40">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 shadow-[0_-2px_10px_rgba(0,0,0,0.1)] flex justify-around items-center p-2 z-40 overflow-x-auto">
         <button
           onClick={() => setCurrentPage('dashboard')}
-          className={`p-3 rounded-full transition-all duration-300 ${
+          className={`p-3 rounded-full transition-all duration-300 flex-shrink-0 ${
             currentPage === 'dashboard'
               ? 'bg-primary-500 text-white'
               : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
@@ -131,7 +136,7 @@ const App: React.FC = () => {
         </button>
         <button
           onClick={() => setCurrentPage('chat')}
-          className={`p-3 rounded-full transition-all duration-300 ${
+          className={`p-3 rounded-full transition-all duration-300 flex-shrink-0 ${
             currentPage === 'chat'
               ? 'bg-primary-500 text-white'
               : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
@@ -141,8 +146,19 @@ const App: React.FC = () => {
           <MessageSquare size={24} />
         </button>
         <button
+          onClick={() => setCurrentPage('schedule')}
+          className={`p-3 rounded-full transition-all duration-300 flex-shrink-0 ${
+            currentPage === 'schedule'
+              ? 'bg-primary-500 text-white'
+              : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+          }`}
+          title="Schedule"
+        >
+          <Calendar size={24} />
+        </button>
+        <button
           onClick={() => setCurrentPage('history')}
-          className={`p-3 rounded-full transition-all duration-300 ${
+          className={`p-3 rounded-full transition-all duration-300 flex-shrink-0 ${
             currentPage === 'history'
               ? 'bg-primary-500 text-white'
               : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
@@ -153,7 +169,7 @@ const App: React.FC = () => {
         </button>
         <button
           onClick={() => setCurrentPage('notifications')}
-          className={`p-3 rounded-full transition-all duration-300 ${
+          className={`p-3 rounded-full transition-all duration-300 flex-shrink-0 ${
             currentPage === 'notifications'
               ? 'bg-primary-500 text-white'
               : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
@@ -164,7 +180,7 @@ const App: React.FC = () => {
         </button>
         <button
           onClick={() => setCurrentPage('profile')}
-          className={`p-3 rounded-full transition-all duration-300 ${
+          className={`p-3 rounded-full transition-all duration-300 flex-shrink-0 ${
             currentPage === 'profile'
               ? 'bg-primary-500 text-white'
               : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
@@ -182,8 +198,8 @@ const App: React.FC = () => {
       <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
         <div className="w-full max-w-md p-8 space-y-8 bg-white dark:bg-gray-800 rounded-2xl shadow-lg">
           <div className="text-center">
-            <h1 className="text-4xl font-bold text-primary-600 dark:text-primary-400">SybauSuzuka</h1>
-            <p className="mt-2 text-gray-600 dark:text-gray-300">Your Mental Wellness Companion</p>
+            <h1 className="text-4xl font-bold text-primary-600 dark:text-primary-400">{t('app.title', language)}</h1>
+            <p className="mt-2 text-gray-600 dark:text-gray-300">{t('app.subtitle', language)}</p>
           </div>
           <form className="space-y-6" onSubmit={(e) => { e.preventDefault(); handleLogin(e.currentTarget.username.value); }}>
             <div className="relative">
@@ -193,11 +209,11 @@ const App: React.FC = () => {
                 type="text"
                 required
                 className="w-full px-4 py-3 text-gray-900 bg-gray-100 border-2 border-transparent rounded-lg dark:text-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                placeholder="Enter your name"
+                placeholder={t('login.placeholder', language)}
               />
             </div>
             <button type="submit" className="w-full px-4 py-3 font-semibold text-white bg-primary-600 rounded-lg hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-transform transform hover:scale-105">
-              Start Journey
+              {t('login.button', language)}
             </button>
           </form>
         </div>
@@ -208,19 +224,19 @@ const App: React.FC = () => {
   const renderPage = () => {
     switch (currentPage) {
       case 'dashboard':
-        return <Dashboard user={user} />;
+        return <Dashboard user={user} language={language} onNavigate={(p: Page) => setCurrentPage(p)} />;
       case 'chat':
-        return <Chat addNotification={addNotification} />;
+        return <Chat addNotification={addNotification} language={language} />;
       case 'history':
-        return <EmotionHistory />;
+        return <EmotionHistory language={language} />;
       case 'schedule':
-        return <ScheduleTimetable addNotification={addNotification} />;
+        return <ScheduleTimetable addNotification={addNotification} language={language} />;
       case 'notifications':
-        return <Notifications notifications={notifications} onClear={clearAllNotifications} />;
+        return <Notifications notifications={notifications} onClear={clearAllNotifications} language={language} />;
       case 'profile':
-        return <Profile user={user} onLogout={handleLogout} colorTheme={colorTheme} setColorTheme={setColorTheme} />;
+        return <Profile user={user} onLogout={handleLogout} colorTheme={colorTheme} setColorTheme={setColorTheme} language={language} setLanguage={setLanguage} />;
       default:
-        return <Chat addNotification={addNotification} />;
+        return <Chat addNotification={addNotification} language={language} />;
     }
   };
 
@@ -236,12 +252,12 @@ const App: React.FC = () => {
             <h1 className="text-2xl font-bold text-primary-600 dark:text-primary-400">SybauSuzuka</h1>
           </div>
           <nav className="space-y-2">
-            <NavItem page="dashboard" icon={<LayoutDashboard size={20} />} label="Dashboard" />
-            <NavItem page="chat" icon={<MessageSquare size={20} />} label="AI Assistant" />
-            <NavItem page="history" icon={<History size={20} />} label="History" />
-            <NavItem page="notifications" icon={<Bell size={20} />} label="Notifications" />
-            <NavItem page="schedule" icon={<Calendar size={20} />} label="Schedule" />
-            <NavItem page="profile" icon={<UserIcon size={20} />} label="Profile" />
+            <NavItem page="dashboard" icon={<LayoutDashboard size={20} />} label={t('nav.dashboard', language)} />
+            <NavItem page="chat" icon={<MessageSquare size={20} />} label={t('nav.chat', language)} />
+            <NavItem page="history" icon={<History size={20} />} label={t('nav.history', language)} />
+            <NavItem page="notifications" icon={<Bell size={20} />} label={t('nav.notifications', language)} />
+            <NavItem page="schedule" icon={<Calendar size={20} />} label={t('nav.schedule', language)} />
+            <NavItem page="profile" icon={<UserIcon size={20} />} label={t('nav.profile', language)} />
           </nav>
         </div>
         <div className="flex items-center justify-between">

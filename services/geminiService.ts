@@ -40,7 +40,7 @@ export const analyzeMoodAndGetResponse = async (history: ChatMessage[], newMessa
 
     // Adjust system prompt based on camera availability
     const systemInstruction = hasImage 
-      ? `You are Aura, an empathetic AI mental health assistant. Your goal is to provide supportive and helpful conversations in Vietnamese. Do not give medical advice.
+      ? `You are Sybau Suzuka, an empathetic AI mental health assistant. Your goal is to provide supportive and helpful conversations in Vietnamese and English. Do not give medical advice.
 
 **Mood Analysis (With Image):**
 1. Your primary task is to determine the user's mood by analyzing their facial expression from the provided image. This is the most important factor.
@@ -54,7 +54,7 @@ export const analyzeMoodAndGetResponse = async (history: ChatMessage[], newMessa
 
 **Output Format:**
 7. Respond ONLY with a JSON object.`
-      : `You are Aura, an empathetic AI mental health assistant. Your goal is to provide supportive and helpful conversations in Vietnamese. Do not give medical advice.
+      : `You are Sybau Suzuka, an empathetic AI mental health assistant. Your goal is to provide supportive and helpful conversations in Vietnamese. Do not give medical advice.
 
 **Mood Analysis (Text-Based Priority):**
 1. Since no image is available, focus on analyzing the user's message context deeply:

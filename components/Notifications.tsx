@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Notification as NotificationType } from '../types';
 import { Trash2, AlertCircle, CheckCircle, Info } from 'lucide-react';
+import { Language, t } from '../i18n';
 
 interface NotificationsProps {
   notifications: NotificationType[];
@@ -11,6 +12,7 @@ const Notifications: React.FC<NotificationsProps> = ({ notifications, onClear })
   const [filteredNotifications, setFilteredNotifications] = useState<NotificationType[]>([]);
   const [filter, setFilter] = useState<'all' | 'success' | 'error' | 'info'>('all');
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
+  const language: Language = (localStorage.getItem('language') as Language) || 'en';
 
   useEffect(() => {
     let filtered = notifications;
@@ -56,10 +58,10 @@ const Notifications: React.FC<NotificationsProps> = ({ notifications, onClear })
     <div className="max-w-4xl mx-auto space-y-6">
       <div>
         <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-2">
-          Notifications
+          {t('notifications.title', language)}
         </h1>
         <p className="text-gray-500 dark:text-gray-400">
-          {filteredNotifications.length} {filteredNotifications.length === 1 ? 'notification' : 'notifications'}
+          {filteredNotifications.length} {filteredNotifications.length === 1 ? (language === 'vi' ? 'thông báo' : 'notification') : (language === 'vi' ? 'thông báo' : 'notifications')}
         </p>
       </div>
 
@@ -68,7 +70,7 @@ const Notifications: React.FC<NotificationsProps> = ({ notifications, onClear })
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Filter by Type
+              {language === 'vi' ? 'Lọc theo loại' : 'Filter by Type'}
             </label>
             <div className="flex flex-wrap gap-2">
               {(['all', 'success', 'error', 'info'] as const).map(type => (
@@ -89,7 +91,7 @@ const Notifications: React.FC<NotificationsProps> = ({ notifications, onClear })
 
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Sort Order
+              {language === 'vi' ? 'Sắp xếp' : 'Sort Order'}
             </label>
             <div className="flex gap-2">
               {(['newest', 'oldest'] as const).map(order => (
@@ -110,12 +112,12 @@ const Notifications: React.FC<NotificationsProps> = ({ notifications, onClear })
         </div>
 
         {filteredNotifications.length > 0 && (
-          <button
+            <button
             onClick={onClear}
             className="w-full flex items-center justify-center px-4 py-2 font-medium text-white bg-red-500 rounded-lg hover:bg-red-600 transition-colors"
           >
             <Trash2 size={18} className="mr-2" />
-            Clear All Notifications
+            {t('notifications.clearAll', language)}
           </button>
         )}
       </div>
@@ -137,7 +139,7 @@ const Notifications: React.FC<NotificationsProps> = ({ notifications, onClear })
                     {notification.message}
                   </p>
                   <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                    {new Date(notification.id).toLocaleString()}
+                    {new Date(notification.id).toLocaleString((language === 'vi' ? 'vi-VN' : 'en-US'))}
                   </p>
                 </div>
               </div>
@@ -147,10 +149,10 @@ const Notifications: React.FC<NotificationsProps> = ({ notifications, onClear })
           <div className="text-center py-12">
             <Info size={48} className="mx-auto text-gray-400 mb-4" />
             <p className="text-gray-500 dark:text-gray-400 text-lg">
-              No notifications yet
+              {t('notifications.empty', language)}
             </p>
             <p className="text-sm text-gray-400 dark:text-gray-500 mt-2">
-              Your notifications will appear here
+              {language === 'vi' ? 'Thông báo của bạn sẽ xuất hiện ở đây' : 'Your notifications will appear here'}
             </p>
           </div>
         )}

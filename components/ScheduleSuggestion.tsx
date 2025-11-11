@@ -1,6 +1,7 @@
 import React from 'react';
 import { SuggestedSchedule } from '../types';
 import { Clock, CheckCircle, X } from 'lucide-react';
+import { Language, t } from '../i18n';
 
 interface ScheduleSuggestionProps {
   suggestions: SuggestedSchedule[];
@@ -13,6 +14,7 @@ const ScheduleSuggestion: React.FC<ScheduleSuggestionProps> = ({
   onAccept,
   onReject,
 }) => {
+  const language: Language = (localStorage.getItem('language') as Language) || 'en';
   if (suggestions.length === 0) {
     return null;
   }
@@ -22,7 +24,7 @@ const ScheduleSuggestion: React.FC<ScheduleSuggestionProps> = ({
       <div className="flex items-center space-x-2">
         <Clock size={20} className="text-blue-600 dark:text-blue-400" />
         <p className="font-semibold text-blue-900 dark:text-blue-200">
-          Suggested Activities
+          {t('suggestion.suggestedActivities', language)}
         </p>
       </div>
 
@@ -68,7 +70,7 @@ const ScheduleSuggestion: React.FC<ScheduleSuggestionProps> = ({
       </div>
 
       <p className="text-xs text-blue-600 dark:text-blue-400">
-        💡 Click the checkmark to add to your schedule, or X to dismiss.
+        {t('suggestion.hint', language)}
       </p>
     </div>
   );
