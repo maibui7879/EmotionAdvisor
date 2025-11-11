@@ -18,6 +18,8 @@ export const analyzeMoodAndGetResponse = async (history: ChatMessage[], newMessa
     const userParts: any[] = [];
     userParts.push({ text: `User's message in Vietnamese: "${newMessage}"` });
 
+    const hasImage = !!imageBase64;
+    
     if (imageBase64) {
       userParts.push({
         inlineData: {
@@ -36,13 +38,11 @@ export const analyzeMoodAndGetResponse = async (history: ChatMessage[], newMessa
       { role: 'user', parts: userParts }
     ];
 
-    const response = await ai.models.generateContent({
-        model: model,
-        contents: contents,
-        config: {
-            systemInstruction: `You are SybauSuzuka, an empathetic AI mental health assistant. Your goal is to provide supportive and helpful conversations in Vietnamese. Do not give medical advice.
+    // Adjust system prompt based on camera availability
+    const systemInstruction = hasImage 
+      ? `You are Aura, an empathetic AI mental health assistant. Your goal is to provide supportive and helpful conversations in Vietnamese. Do not give medical advice.
 
-**Mood Analysis:**
+**Mood Analysis (With Image):**
 1. Your primary task is to determine the user's mood by analyzing their facial expression from the provided image. This is the most important factor.
 2. Use the user's text message for additional context, but if the text and image suggest conflicting emotions, give significantly more weight to the visual information from the image.
 3. Based on this analysis, choose one primary mood from this list: [${moodValues}]. Default to 'Neutral' if unsure.
@@ -53,7 +53,32 @@ export const analyzeMoodAndGetResponse = async (history: ChatMessage[], newMessa
 6. Keep responses concise (2-3 paragraphs maximum).
 
 **Output Format:**
-7. Respond ONLY with a JSON object.`,
+7. Respond ONLY with a JSON object.`
+      : `You are Aura, an empathetic AI mental health assistant. Your goal is to provide supportive and helpful conversations in Vietnamese. Do not give medical advice.
+
+**Mood Analysis (Text-Based Priority):**
+1. Since no image is available, focus on analyzing the user's message context deeply:
+   * Analyze the choice of words (positive/negative vocabulary)
+   * Understand the situation and context they're describing
+   * Look for emotional indicators in their message tone
+   * Consider the user's recent chat history for patterns and trends
+2. Based on the text analysis, choose one primary mood from this list: [${moodValues}]. Default to 'Neutral' if unsure.
+3. When uncertain between multiple moods, use the conversation history to make better inference.
+
+**Response Generation:**
+4. Craft a supportive and conversational response in Vietnamese that acknowledges their feelings.
+5. Use line breaks and formatting to make the response easy to read.
+6. Keep responses concise (2-3 paragraphs maximum).
+7. Reference specific details from their message to show you understand their situation.
+
+**Output Format:**
+8. Respond ONLY with a JSON object.`;
+
+    const response = await ai.models.generateContent({
+        model: model,
+        contents: contents,
+        config: {
+            systemInstruction: systemInstruction,
             responseMimeType: "application/json",
             responseSchema: {
                 type: Type.OBJECT,
