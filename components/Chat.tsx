@@ -192,16 +192,28 @@ const Chat: React.FC<ChatProps> = ({ addNotification }) => {
 
             setLastDetectedMood(mood);
 
-            // Get schedule suggestions
-            const scheduleSuggestions = await getScheduleSuggestion(currentInput);
+            // Get schedule suggestions only if contextually relevant
+            const negativeMoods = ['Anxious', 'Stressed', 'Tired', 'Sad', 'Angry'];
+            const triggerKeywords = ['anxious', 'stressed', 'tired', 'sad', 'depressed', 'lonely', 'worry', 'lo lắng', 'căng thẳng', 'mệt', 'buồn', 'chán', 'stress'];
             
-            const suggestedSchedules: SuggestedSchedule[] = scheduleSuggestions.map((s, idx) => ({
-                id: `${Date.now()}-${idx}`,
-                title: s.title || '',
-                startTime: s.startTime || '09:00',
-                endTime: s.endTime || '10:00',
-                accepted: false,
-            }));
+            let suggestedSchedules: SuggestedSchedule[] = [];
+            
+            const shouldGetScheduleSuggestion = 
+              currentInput.trim().length > 0 && (
+                negativeMoods.includes(mood) ||
+                triggerKeywords.some(keyword => currentInput.toLowerCase().includes(keyword))
+              );
+
+            if (shouldGetScheduleSuggestion) {
+              const scheduleSuggestions = await getScheduleSuggestion(currentInput);
+              suggestedSchedules = scheduleSuggestions.map((s, idx) => ({
+                  id: `${Date.now()}-${idx}`,
+                  title: s.title || '',
+                  startTime: s.startTime || '09:00',
+                  endTime: s.endTime || '10:00',
+                  accepted: false,
+              }));
+            }
 
             const aiMessage: ChatMessage = {
                 id: (Date.now() + 1).toString(),

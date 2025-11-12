@@ -62,12 +62,14 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
   useEffect(() => {
     refreshChart();
 
-    // Load cached summary from localStorage if available. Do NOT auto-generate a new summary here.
+    // Load cached summary from localStorage if available
+    let cachedSummary = '';
     try {
       const raw = localStorage.getItem('analytics_summary');
       if (raw) {
         const parsed = JSON.parse(raw);
         if (parsed && parsed.summary) {
+          cachedSummary = parsed.summary;
           setSummary(parsed.summary);
           lastSummaryTimeRef.current = parsed.generated_at || 0;
         }
@@ -76,10 +78,14 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
       console.warn('Failed to read cached analytics summary', e);
     }
 
-    // If there are no cached summaries and no entries, show the placeholder message
-    const entries = getEmotionEntries();
-    if (!summary) {
-      if (entries.length === 0) {
+    // If no cached summary exists and there ARE entries, auto-generate one on first load
+    if (!cachedSummary) {
+      const entries = getEmotionEntries();
+      if (entries.length > 0) {
+        // Auto-generate summary on first load
+        generateSummary(entries.slice(0, 10), false);
+      } else {
+        // Show placeholder if no entries
         setSummary(language === 'vi' ? 'Bắt đầu trò chuyện với trợ lý AI để xem tóm tắt wellness của bạn ở đây.' : 'Start chatting with the AI assistant to see your wellness summary here.');
       }
     }
@@ -90,7 +96,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
     return () => {
       clearInterval(chartInterval);
     };
-  }, [generateSummary, refreshChart, summary, language]);
+  }, [generateSummary, refreshChart, language]);
 
   // Helper function to format summary with markdown-like syntax
   const formatSummary = (text: string) => {

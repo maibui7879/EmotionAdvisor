@@ -99,6 +99,7 @@ const App: React.FC = () => {
   
   const handleLogout = () => {
     localStorage.removeItem('SybauSuzuka-user');
+    localStorage.removeItem('analytics_summary'); // Clear cached summary on logout
     setUser(null);
     setCurrentPage('dashboard');
   }

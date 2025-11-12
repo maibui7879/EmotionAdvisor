@@ -35,16 +35,31 @@ const EmotionLogger: React.FC<EmotionLoggerProps> = ({ onEmotionLogged, addNotif
     
     // Save entry without AI suggestion first for responsiveness
     const savedEntry = saveEmotionEntry(newEntryData);
-  onEmotionLogged(); // Update UI immediately
-  addNotification(t('emotion.success', (localStorage.getItem('language') as Language) || 'en'), 'success');
+    onEmotionLogged(); // Update UI immediately
+    addNotification(t('emotion.success', (localStorage.getItem('language') as Language) || 'en'), 'success');
 
-    // Then, get AI suggestion and update the entry
-    const suggestion = await getPositiveSuggestion(newEntryData);
-    const updatedEntry = { ...savedEntry, aiSuggestion: suggestion };
-    updateEmotionEntry(updatedEntry);
+    // Only get AI suggestion if mood needs support (negative/neutral moods or high intensity)
+    const negativeMoods = ['Anxious', 'Stressed', 'Tired', 'Sad', 'Angry', 'Neutral'];
+    const shouldGetAISuggestion = negativeMoods.includes(selectedMood) || intensity >= 7;
 
-    // Also get schedule suggestion
-    if (note.trim().length > 0) {
+    if (shouldGetAISuggestion) {
+      const suggestion = await getPositiveSuggestion(newEntryData);
+      const updatedEntry = { ...savedEntry, aiSuggestion: suggestion };
+      updateEmotionEntry(updatedEntry);
+    }
+
+    // Get schedule suggestion only if it's contextually relevant (negative moods, high intensity, or keywords)
+    const negativeMoodsForSchedule = ['Anxious', 'Stressed', 'Tired', 'Sad', 'Angry'];
+    const triggerKeywords = ['anxious', 'stressed', 'tired', 'sad', 'depressed', 'lonely', 'worry', 'lo lắng', 'căng thẳng', 'mệt', 'buồn', 'chán', 'stress'];
+    
+    const shouldGetScheduleSuggestion = 
+      note.trim().length > 0 && (
+        negativeMoodsForSchedule.includes(selectedMood) ||
+        intensity >= 7 ||
+        triggerKeywords.some(keyword => note.toLowerCase().includes(keyword))
+      );
+
+    if (shouldGetScheduleSuggestion) {
         const scheduleSuggestions = await getScheduleSuggestion(note);
         if(scheduleSuggestions.length > 0) {
             addNotification(language === 'vi' ? 'AI đã đề xuất một vài hoạt động cho bạn. Kiểm tra lịch trình!' : 'AI has suggested some activities for you. Check your schedule!', 'info');
