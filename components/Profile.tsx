@@ -170,7 +170,7 @@ const Profile: React.FC<ProfileProps> = ({ user, onLogout, colorTheme, setColorT
           {/* Color Theme Card */}
           <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-lg p-8">
             <div className="flex items-center mb-6">
-              <div className="p-3 bg-primary-100 dark:bg-primary-900/30 rounded-lg mr-3">
+              <div className="p-3 bg-primary-100 dark:bg-primary-900/30 rounded-full mr-3">
                 <Palette size={24} className="text-primary-500"/>
               </div>
               <h3 className="text-xl font-bold text-gray-800 dark:text-white">{t('profile.color', language)}</h3>
@@ -180,7 +180,7 @@ const Profile: React.FC<ProfileProps> = ({ user, onLogout, colorTheme, setColorT
                 <button
                   key={color.name}
                   onClick={() => setColorTheme(color.name)}
-                  className={`w-14 h-14 rounded-full ${color.bg} transition-all transform hover:scale-110 ${
+                  className={`w-14 md:h-12 h-14 rounded-full ${color.bg} transition-all transform hover:scale-110 ${
                     colorTheme === color.name 
                       ? 'ring-4 ring-offset-2 ring-gray-400 dark:ring-offset-gray-800 shadow-lg scale-110' 
                       : 'shadow-md hover:shadow-lg'
@@ -206,7 +206,7 @@ const Profile: React.FC<ProfileProps> = ({ user, onLogout, colorTheme, setColorT
                   onClick={() => setLanguage(lang.code)}
                   className={`w-14 h-14 rounded-full flex items-center justify-center text-2xl transition-all transform ${
                     language === lang.code
-                      ? 'ring-4 ring-primary-500 scale-110 shadow-lg'
+                      ? 'ring-2 ring-primary-500 scale-110 shadow-lg'
                       : 'bg-gray-100 dark:bg-gray-700 hover:scale-105'
                   }`}
                   title={lang.label}
